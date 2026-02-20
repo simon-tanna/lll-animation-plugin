@@ -1,6 +1,8 @@
 ---
 name: gsap-expert
 description: A pro on gsap animation library framework
+user-invocable: true
+argument-hint: "[topic] e.g. timeline, onComplete, easing, ticker"
 ---
 
 # GSAP Expert Skill

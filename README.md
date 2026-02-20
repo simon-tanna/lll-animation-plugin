@@ -15,15 +15,17 @@ Then restart Claude Code.
 
 ### Skills (7)
 
-| Skill | Type | Description |
-|-------|------|-------------|
-| `workshop-guide` | User-invocable (`/guide`) | Task navigator with acceptance criteria, gotcha warnings, and phase transition help. Accepts optional task ID (e.g. `/guide 1.3`). |
-| `isometric-rolling-cube` | Claude-only | Pivot-point rolling technique for both CSS and Three.js — direction mappings, reparenting cycle, quaternion tracking, grid snapping. |
-| `css-3d-cube` | Claude-only | 2-div + pseudo-element cube construction, `preserve-3d` rules, `color-mix()` shading, isometric projection angles. |
-| `gsap-expert` | Claude-only | Comprehensive GSAP v3 reference with 636KB of API documentation in `references/`. |
-| `threejs-fundamentals` | Claude-only | Scene setup, cameras, renderer, Object3D hierarchy, coordinate systems. |
-| `threejs-animation` | Claude-only | Keyframe animation, skeletal animation, morph targets, animation mixing. |
-| `threejs-materials` | Claude-only | PBR materials, Phong, shader materials, material properties and optimisation. |
+All skills are dual-mode: Claude auto-invokes them when the conversation topic matches, and participants can also invoke them directly as slash commands.
+
+| Skill | Slash Command | Description |
+|-------|---------------|-------------|
+| `workshop-guide` | `/guide [task-id]` | Task navigator with acceptance criteria, gotcha warnings, and phase transition help. e.g. `/guide 1.3` |
+| `isometric-rolling-cube` | `/isometric-rolling-cube [topic]` | Pivot-point rolling technique for both CSS and Three.js — direction mappings, reparenting cycle, quaternion tracking, grid snapping. |
+| `css-3d-cube` | `/css-3d-cube [topic]` | 2-div + pseudo-element cube construction, `preserve-3d` rules, `color-mix()` shading, isometric projection angles. |
+| `gsap-expert` | `/gsap-expert [topic]` | Comprehensive GSAP v3 reference with 636KB of API documentation in `references/`. |
+| `threejs-fundamentals` | `/threejs-fundamentals [topic]` | Scene setup, cameras, renderer, Object3D hierarchy, coordinate systems. |
+| `threejs-animation` | `/threejs-animation [topic]` | Keyframe animation, skeletal animation, morph targets, animation mixing. |
+| `threejs-materials` | `/threejs-materials [topic]` | PBR materials, Phong, shader materials, material properties and optimisation. |
 
 ### Agents (2)
 
@@ -55,11 +57,9 @@ Phase 2 — Three.js + GSAP (~1.5 hours)
 
 Once installed, participants can:
 
-- Type `/guide` to see where they are and what to do next
-- Type `/guide 1.3` for task-specific help, acceptance criteria, and relevant gotchas
-- Ask any question about rolling cubes, CSS 3D, GSAP, or Three.js — the relevant skills trigger automatically
-- After completing the rolling animation (Task 1.3 or 2.3), the `animation-reviewer` agent can be invoked to check for common bugs
-- When starting Phase 2, the `phase-transition-helper` agent maps their Phase 1 code to Three.js equivalents
+- **Slash commands** — invoke any skill directly: `/guide 1.3`, `/gsap-expert timeline`, `/css-3d-cube preserve-3d`
+- **Auto-invocation** — just ask a question naturally ("my cube is spinning in place") and Claude pulls in the relevant skill automatically based on topic
+- **Agents** — after completing the rolling animation (Task 1.3 or 2.3), the `animation-reviewer` agent can be invoked to check for common bugs. When starting Phase 2, the `phase-transition-helper` agent maps Phase 1 code to Three.js equivalents
 
 ## Development
 

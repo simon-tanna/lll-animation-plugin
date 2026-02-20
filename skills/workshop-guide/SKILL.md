@@ -7,6 +7,7 @@ description: >
   "what should I work on?", asks about a specific task number (e.g. "help with 1.3"),
   wants to check if their work is done, or needs to understand the workshop structure.
   Also use when someone mentions Phase 1, Phase 2, or any task by number.
+user-invocable: true
 argument-hint: "[task-id] e.g. 1.3, 2.1, or blank for overview"
 ---
 

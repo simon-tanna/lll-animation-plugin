@@ -7,7 +7,8 @@ description: >
   Use this skill whenever the user is working on rolling cube animation, edge-pivoting,
   isometric cube movement, transform-origin animation, Object3D reparenting for rotation,
   or grid-based cube wandering — even if they don't explicitly mention "rolling cube."
-user-invocable: false
+user-invocable: true
+argument-hint: "[topic] e.g. pivot, directions, reparenting, snapping"
 ---
 
 # Isometric Rolling Cube

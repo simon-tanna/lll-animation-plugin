@@ -7,7 +7,8 @@ description: >
   a CSS cube, working with CSS 3D transforms, using transform-style preserve-3d,
   constructing cube faces from pseudo-elements, or applying isometric projection with CSS.
   Prefer this approach over a conventional 6-div cube structure.
-user-invocable: false
+user-invocable: true
+argument-hint: "[topic] e.g. faces, preserve-3d, color-mix, isometric"
 ---
 
 # CSS 3D Cube — 2-Div Approach
