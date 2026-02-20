@@ -1,0 +1,18 @@
+{
+  "name": "lll-animation",
+  "version": "1.0.0",
+  "description": "Workshop toolkit for the LLL Animation workshop — rolling 3D isometric cube with CSS + GSAP (Phase 1) and Three.js + GSAP (Phase 2). Includes rolling cube technique, CSS 3D cube construction, task-by-task guidance, GSAP and Three.js reference skills, and specialised review agents.",
+  "author": {
+    "name": "Simon Tanna"
+  },
+  "license": "MIT",
+  "keywords": [
+    "animation",
+    "workshop",
+    "three.js",
+    "gsap",
+    "css-3d",
+    "isometric",
+    "rolling-cube"
+  ]
+}
