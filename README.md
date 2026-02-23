@@ -20,7 +20,7 @@ All skills are dual-mode: Claude auto-invokes them when the conversation topic m
 | Skill | Slash Command | Description |
 |-------|---------------|-------------|
 | `workshop-guide` | `/guide [task-id]` | Task navigator with acceptance criteria, gotcha warnings, and phase transition help. e.g. `/guide 1.3` |
-| `isometric-rolling-cube` | `/isometric-rolling-cube [topic]` | Pivot-point rolling technique for both CSS and Three.js — direction mappings, reparenting cycle, quaternion tracking, grid snapping. |
+| `isometric-rolling-cube` | `/isometric-rolling-cube [topic]` | Rolling technique for both CSS and Three.js — direction mappings, reparenting cycle, rotation reset, grid snapping. |
 | `css-3d-cube` | `/css-3d-cube [topic]` | 2-div + pseudo-element cube construction, `preserve-3d` rules, `color-mix()` shading, isometric projection angles. |
 | `gsap-expert` | `/gsap-expert [topic]` | Comprehensive GSAP v3 reference with 636KB of API documentation in `references/`. |
 | `threejs-fundamentals` | `/threejs-fundamentals [topic]` | Scene setup, cameras, renderer, Object3D hierarchy, coordinate systems. |
