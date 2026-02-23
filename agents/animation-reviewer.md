@@ -20,7 +20,7 @@ Work through each check below. For each one, read the relevant code, determine p
 
 **What to check:** The cube must rotate around its bottom edge in the roll direction, not around its centre.
 
-- **CSS (Task 1.3):** Is `transform-origin` being set to the bottom edge before each roll? Look for dynamic origin changes per direction (right edge, left edge, front edge, back edge). If the origin stays at `center` or `50% 50%`, this is wrong.
+- **CSS (Task 1.3):** Does the code perform a basic 90-degree rotation and then **reset** in the `onComplete` callback? The reset must zero out the rotation and update the element's position to the new grid cell. If rotations accumulate without resetting, the animation breaks after 2-3 rolls.
 - **Three.js (Task 2.3):** Is a pivot `Object3D` being created and positioned at the cube's bottom edge? The pivot position should include a downward offset of half the cube size (e.g., `y = -size/2`). If the pivot is at the cube's centre, the cube will spin in place.
 
 **Fail symptom:** Cube rotates in place instead of tipping over its edge.
@@ -56,7 +56,7 @@ Work through each check below. For each one, read the relevant code, determine p
 **What to check:** After each roll, the cube's orientation has changed. The code must account for this.
 
 - **CSS:** After each roll, does the code reset the transform (zero out rotation, update position to new grid cell)? If rotations accumulate without reset, the pivot calculations break after 2-3 rolls.
-- **Three.js:** Is the code using quaternions or resetting Euler angles to clean values after each roll? Look for `Quaternion.premultiply()` or explicit angle resets. If Euler angles are simply incremented (`rotation.x += PI/2`), they will produce gimbal lock after a few mixed-axis rolls.
+- **Three.js:** After each roll completes (in `onComplete`), does the code reset rotation to clean values? Look for explicit angle resets (setting rotation to exact multiples of PI/2) or snapping via `gsap.set()`. If Euler angles are simply incremented (`rotation.x += PI/2`) without resetting, floating-point drift and gimbal lock will cause problems after several rolls.
 
 **Fail symptom:** First 1-2 rolls look correct, then subsequent rolls go in unexpected directions or the cube deforms.
 

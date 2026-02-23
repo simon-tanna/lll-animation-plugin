@@ -67,33 +67,30 @@ The exact values depend on how the cube's faces are positioned (which in turn de
 
 ---
 
-## Phase 1: CSS Pivot Technique
+## Phase 1: CSS Rolling Technique
 
 ### How It Works
 
-CSS `transform-origin` sets the point around which transforms are applied. For each roll:
+Each roll is a simple 90-degree rotation animated with GSAP. The key is the **reset step** after each roll — this keeps each animation starting from a clean state.
 
-1. **Set origin** to the bottom edge in the roll direction
-2. **Animate** a 90-degree rotation around that edge (using GSAP)
-3. **On complete:** reset the element — update its position by one grid cell, clear the rotation, and prepare the origin for the next roll
+For each roll:
 
-### The Reset Step
+1. **Animate** a 90-degree rotation in the roll direction (using GSAP)
+2. **On complete (the reset):** move the element to its new grid position, zero out the rotation, and the cube is ready for the next roll
 
-After a roll completes, the cube has rotated 90 degrees and translated one cell. You need to "absorb" this into the base state:
+### The Reset Step (Core Technique)
+
+After a roll completes, the cube has rotated 90 degrees. You must "absorb" this into the base state:
 
 - Move the element to its new grid position (CSS `left`/`top` or `translate`)
 - Zero out the roll rotation
 - This prevents cumulative transform stacking
 
-Without this reset, each successive roll compounds on the previous rotation, and the pivot point calculations break.
+Without this reset, each successive roll compounds on the previous rotation and the animation breaks after 2-3 rolls. The reset is what makes the entire approach work — each roll starts from a clean, predictable state.
 
 ### Cumulative State
 
-Track the cube's logical orientation separately from the CSS transform. After each roll, update a rotation tracker (which face is now on top, which face is forward, etc.). This matters because the roll axes are relative to the cube's current orientation — if the cube has already rolled right once, its local axes have shifted.
-
-Two approaches:
-- **Face tracking:** maintain which face index is in each position (top, front, right, etc.) — simpler for CSS where you reset transforms each roll
-- **Quaternion accumulation:** multiply each roll's quaternion onto a running total — more robust but overkill for the CSS phase
+Because each roll resets to a clean state, no complex rotation tracking is needed. The logical grid position `(gridX, gridY)` is the only state to maintain between rolls — update it in the `onComplete` callback after each reset.
 
 ---
 
@@ -129,17 +126,13 @@ This is the single most important API distinction in the entire implementation.
 
 Use `attach()` for both directions: cube-to-pivot and pivot-back-to-scene.
 
-### Quaternion vs Euler Rotation Tracking
+### Rotation Reset After Each Roll
 
-Three.js defaults to `'XYZ'` Euler order. After multiple 90-degree rolls across different axes, Euler angles produce unexpected results due to gimbal lock and order-dependent composition.
+After each roll's reparenting cleanup, reset the cube's rotation to clean values. Since each roll is exactly 90 degrees, all rotation components should be exact multiples of PI/2.
 
-**Recommended approach:** Use quaternions to track cumulative rotation state.
+**Recommended approach:** Reset Euler angles to clean values after each roll in the `onComplete` callback. Round each rotation component to the nearest multiple of PI/2. This keeps every roll starting from a predictable state — no cumulative drift, no gimbal lock issues.
 
-- Each roll produces a quaternion: `new Quaternion().setFromAxisAngle(axis, PI/2)`
-- Accumulate with `cumulativeQuat.premultiply(rollQuat)` — `premultiply` applies the new rotation in world space (left-multiply)
-- After each roll's reparenting cleanup, set the cube's quaternion to the accumulated value
-
-**Simpler alternative:** Reset Euler angles to clean multiples of PI/2 after each roll. This works if you also maintain a face-tracking table that tells you what the "clean" rotation should be after N rolls in various directions. It avoids quaternion math but requires a lookup table.
+**Optional advanced approach:** Use quaternions (`Quaternion.premultiply()`) to track cumulative rotation if you need precise face-orientation tracking (e.g., knowing which face is on top). This is not needed for the workshop's rolling behaviour.
 
 ---
 
@@ -196,7 +189,7 @@ Track position as integer grid coordinates `(gridX, gridY)` alongside the render
 |---------|---------|-----|
 | Pivot at centre, not edge | Cube spins in place | Position pivot at bottom edge using offset formula |
 | Using `add()` instead of `attach()` | Cube jumps when reparented | Always use `attach()` for both directions |
-| Euler angle accumulation | Unexpected rotation after 3-4 rolls | Use quaternions or reset to clean values |
+| Euler angle accumulation | Unexpected rotation after 3-4 rolls | Reset rotation to clean multiples of PI/2 after each roll |
 | No grid snap | Cube drifts off grid over time | `gsap.set()` to round position in `onComplete` |
 | Pre-built timeline for random directions | Can't randomise; timeline is fixed | Use `onComplete` chaining, one roll per timeline |
 | GSAP directional shortcuts (`_cw`, `_short`) | Ignored or breaks on Three.js objects | These only work on DOM targets — use raw angle values |
