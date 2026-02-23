@@ -268,6 +268,6 @@ The isometric rotation creates the *viewing angle*. It's a property of the camer
 
 ## See Also
 
-- `isometric-rolling-cube` — Rolling animation technique (transform-origin shifting, GSAP patterns)
+- `isometric-rolling-cube` — Rolling animation technique (rotation + reset, GSAP patterns)
 - `workshop-guide` — Task progression, acceptance criteria, gotcha warnings
 - `gsap-expert` — GSAP animation API reference

@@ -103,7 +103,7 @@ Phase 2 — Three.js + GSAP
 - Uses GSAP (not CSS keyframes)
 - Pleasant timing with pause between rolls
 
-**Key concepts:** The pivot point shifts to the bottom edge in the roll direction via `transform-origin`. After each roll, absorb the rotation into the base state (reset transform, update position). Chain rolls with `onComplete` callbacks — don't pre-build a long timeline since directions are random.
+**Key concepts:** Each roll is a basic 90-degree rotation. After each roll, **reset** — zero the rotation and update the element's position to the new grid cell. This reset-per-roll pattern is the core technique. Chain rolls with `onComplete` callbacks — don't pre-build a long timeline since directions are random.
 
 **Gotchas:** Watch out for — Rotation axis confusion, Cumulative rotation state, Grid snapping after rolls
 
@@ -154,7 +154,7 @@ Phase 2 — Three.js + GSAP
 **Acceptance criteria:**
 - Shaded 3D cube visible in the Three.js scene, positioned on the grid
 
-**Key concepts:** `BoxGeometry` + `MeshStandardMaterial` or `MeshPhongMaterial` for natural shading from scene lighting. Alternatively, assign an array of materials for explicit per-face colour.
+**Key concepts:** `BoxGeometry` + `MeshBasicMaterial`. Use an array of 6 `MeshBasicMaterial` instances for per-face colour — this matches the CSS approach and keeps things simple (no scene lighting needed).
 
 ---
 
@@ -214,7 +214,7 @@ When starting Phase 2, here's what carries over and what changes:
 |---------|--------------|-------------------|
 | Cube construction | HTML elements + CSS transforms | `BoxGeometry` + `Material` |
 | Isometric view | Container rotation (`rotateX(35.264deg) rotateZ(45deg)`) | `OrthographicCamera` positioned at isometric angle |
-| Pivot point | `transform-origin` shift | Temporary `Object3D` at edge + `attach()` reparenting |
+| Pivot point | Basic rotation + reset in `onComplete` | Temporary `Object3D` at edge + `attach()` reparenting |
 | Roll animation | GSAP tweens CSS properties | GSAP tweens `mesh.rotation` / `mesh.position` sub-objects |
 | Render trigger | Browser handles CSS rendering | Need explicit render loop (rAF or `gsap.ticker`) |
 | Direction data | Same 4 directions | Same 4 directions (but mapped to Three.js XZ axes) |
@@ -229,7 +229,7 @@ When starting Phase 2, here's what carries over and what changes:
 
 **What changes fundamentally:**
 - How you achieve the pivot point (biggest change)
-- How rotation state accumulates (quaternions recommended in Three.js)
+- How rotation state is managed (reset rotation to clean values after each roll)
 - You need to manage the render loop explicitly
 
 ---
@@ -240,7 +240,7 @@ When starting Phase 2, here's what carries over and what changes:
 |--------|---------------|-----------------|
 | Rotation axis confusion | 1.2, 1.3, 2.3 | Visual "right" on screen is diagonal in world-space. Each roll direction maps to a different axis. |
 | Cumulative rotation state | 1.3, 2.3 | After several rolls, local axes have shifted. Must track or reset orientation. |
-| Euler rotation order | 2.3 | Three.js defaults to 'XYZ'. Multiple 90-degree rolls across axes → gimbal lock. Use quaternions or reset Euler values. |
+| Euler rotation order | 2.3 | Three.js defaults to 'XYZ'. Multiple 90-degree rolls across axes → drift. Reset rotation to clean multiples of PI/2 after each roll. |
 | Pivot point in Three.js | 2.3 | No `transform-origin` equivalent. Must use parent `Object3D` technique. Use `attach()` not `add()`. |
 | GSAP + render loop | 2.3 | GSAP tweens values but doesn't trigger Three.js renders. Need rAF, `onUpdate`, or `gsap.ticker`. |
 | Grid snapping after rolls | 1.3, 2.3 | Floating-point drift. Use `gsap.set()` to snap to exact grid coords in `onComplete`. |

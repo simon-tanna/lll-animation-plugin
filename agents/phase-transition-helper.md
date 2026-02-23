@@ -29,7 +29,7 @@ Walk through each concept and explain how the participant's specific code maps t
 
 **Three.js equivalent:** `new THREE.BoxGeometry(size, size, size)` + material. One line replaces all the face positioning CSS.
 
-**What to tell them:** The geometry is trivial in Three.js — `BoxGeometry` handles all 6 faces automatically. The effort shifts to understanding the scene graph and materials. If they used per-face colours in CSS, they can achieve the same with an array of 6 materials, but `MeshStandardMaterial` with scene lighting gives natural face shading for free.
+**What to tell them:** The geometry is trivial in Three.js — `BoxGeometry` handles all 6 faces automatically. The effort shifts to understanding the scene graph and materials. Use `MeshBasicMaterial` with an array of 6 materials for per-face colour — this matches the CSS approach (explicit colour per face) and avoids needing scene lighting. Keep it simple.
 
 ### Isometric View
 
@@ -39,22 +39,24 @@ Walk through each concept and explain how the participant's specific code maps t
 
 **What to tell them:** The mental model inverts. In CSS, the *scene* rotates to face the camera. In Three.js, the *camera* is positioned to look at the scene. The result is identical (orthographic isometric projection), but it means:
 - World axes map differently to screen axes
-- Moving +X in Three.js goes diagonally up-right on screen
-- Moving +Z in Three.js goes diagonally down-right on screen
+- Moving +X in Three.js goes diagonally on screen (likely up-right)
+- Moving +Z in Three.js goes diagonally on screen (likely down-right)
 - They need to think in world coordinates, not screen coordinates
+
+**Note:** The exact axis-to-screen mapping depends on the boilerplate's camera position and orientation. Verify the mapping above against the actual starter repo before relying on it.
 
 ### Pivot Point (The Big Change)
 
-**CSS approach:** `transform-origin` shifts to the rolling edge before each roll. This is a one-line property change.
+**CSS approach:** Animate a basic 90-degree rotation, then **reset** in `onComplete` — zero the rotation and update the element's position to the new grid cell. This reset-per-roll pattern is the key insight: each roll starts from a clean state, so there's no cumulative transform complexity.
 
 **Three.js equivalent:** Create a temporary `Object3D` at the edge, `attach()` the cube to it, rotate the pivot, then `scene.attach()` the cube back. This is the biggest conceptual shift.
 
-**What to tell them:** This is where most time will be spent. Walk through the 5-step cycle:
+**What to tell them:** The CSS reset pattern carries over conceptually — each roll starts clean and ends with a reset. In Three.js the mechanics are different (reparenting instead of `transform-origin`), but the principle is the same. Walk through the 5-step cycle:
 1. Position pivot at bottom edge in roll direction
 2. `pivot.attach(cube)` — preserves world position
 3. Animate pivot rotation with GSAP
 4. `scene.attach(cube)` — preserves world position
-5. Remove pivot, snap grid position
+5. Remove pivot, snap grid position, reset rotation
 
 Emphasise that `attach()` (not `add()`) is critical — it preserves the cube's world transform during reparenting. Using `add()` instead causes the cube to visually jump.
 
@@ -82,11 +84,11 @@ Emphasise that `attach()` (not `add()`) is critical — it preserves the cube's 
 
 ### Rotation Tracking
 
-**CSS approach:** They likely reset transforms after each roll and tracked orientation via face indices or simple counters.
+**CSS approach:** Reset transforms after each roll — zero rotation, snap position. No cumulative tracking needed.
 
-**Three.js equivalent:** Quaternions are recommended for cumulative rotation tracking. Euler angles (Three.js default) suffer from gimbal lock after multiple mixed-axis rolls.
+**Three.js equivalent:** Same principle — reset rotation to clean values after each roll in `onComplete`. Set Euler angles to exact multiples of PI/2 (or use `gsap.set()`). Since each roll starts from a clean state, there's no cumulative rotation to track.
 
-**What to tell them:** If their CSS approach used simple angle resets, they can do the same in Three.js by carefully setting Euler angles to clean multiples of PI/2 after each roll. But if they want robustness, quaternions are the way to go. `Quaternion.premultiply()` composes rotations in world space.
+**What to tell them:** This is handled by the reset step that they already know from CSS. After each roll completes, zero out rotation and snap position. No quaternions or complex rotation tracking needed for this workshop.
 
 ## Reusable Code Identification
 
