@@ -3,17 +3,21 @@ name: workshop-guide
 description: >
   LLL Animation Workshop navigator. Provides task-by-task guidance, acceptance criteria,
   gotcha warnings, and phase transition help for the 3-hour rolling cube workshop.
-  Use this skill whenever a participant asks "what do I do next?", "I'm stuck",
+  This skill should be used when a participant asks "what do I do next?", "I'm stuck",
   "what should I work on?", asks about a specific task number (e.g. "help with 1.3"),
   wants to check if their work is done, or needs to understand the workshop structure.
-  Also use when someone mentions Phase 1, Phase 2, or any task by number.
+  Also triggered when someone mentions Phase 1, Phase 2, or any task by number.
 user-invocable: true
 argument-hint: "[task-id] e.g. 1.3, 2.1, or blank for overview"
 ---
 
 # LLL Animation Workshop Guide
 
-A 3-hour workshop building a rolling 3D isometric cube in two phases. Participants receive a starter repo with Vite + TypeScript, an isometric diamond grid background, and all dependencies pre-installed.
+A 3-hour workshop building a rolling 3D isometric cube in two phases.
+
+**Tech stack:** Vite + TypeScript, HTML, CSS, vanilla JS/TS, GSAP, Three.js
+
+Participants receive a starter repo with a working Vite/TS app, an isometric diamond grid background, and all dependencies pre-installed.
 
 **End result:** A mint/teal 3D cube in isometric view that continuously rolls across the grid — tumbling face-to-face in random directions, bouncing off window boundaries.
 
@@ -63,7 +67,7 @@ Phase 2 — Three.js + GSAP
 
 ### Task 1.1 — Construct the 3D Cube
 
-**Goal:** Create a static 3D cube using CSS transforms with minimal HTML elements.
+**Goal:** Create a static 3D cube using CSS transforms with a 3-level HTML hierarchy (scene container, cube container, 6 face divs).
 
 **Acceptance criteria:**
 - A static, correctly-formed 3D cube visible in the browser
@@ -71,9 +75,11 @@ Phase 2 — Three.js + GSAP
 - Distinguishable shading on each face
 - Uses CSS custom properties for dimensions
 
-**Key concepts:** `transform-style: preserve-3d` (not inherited — think about which elements need it), `transform-origin`, `color-mix()` for face shading from a single base colour.
+**Key concepts:** `transform-style: preserve-3d` (not inherited — set on every element whose children participate in 3D space), rotate + `translateZ(halfSize)` face positioning pattern, `color-mix()` for face shading from a single base colour.
 
-**Reference:** Julia Miocene — 3D Cube With CSS (2-div + pseudo-element approach)
+**Skill:** `phase1-css-cube` — full Desandro 6-div technique, code examples, and `preserve-3d` deep dive
+
+**Reference:** [Intro to CSS 3D Transforms — Cube (David DeSandro)](https://3dtransforms.desandro.com/cube)
 
 ---
 
@@ -86,9 +92,11 @@ Phase 2 — Three.js + GSAP
 - Aligns with the diamond grid lines from the boilerplate
 - No perspective distortion — parallel lines stay parallel
 
-**Key concepts:** Rotation angles derived from `atan(1/sqrt(2))` = 35.264 degrees. Applied to a container element, not individual faces. No CSS `perspective` property (that creates vanishing-point distortion).
+**Key concepts:** Rotation angles derived from `atan(1/sqrt(2))` = 35.264 degrees. Applied to a container element, not individual faces. No CSS `perspective` property — the Desandro tutorial uses perspective for a vanishing-point look, but isometric projection is orthographic (parallel lines stay parallel). The `.scene` container needs `preserve-3d` so the cube's 3D structure passes through.
 
-**Gotcha:** Watch out for — Rotation axis confusion (Task 1.2 gotcha)
+**Skill:** `phase1-css-cube` — isometric projection section with full CSS
+
+**Gotcha:** Watch out for — Rotation axis confusion, using `perspective` when isometric requires none
 
 ---
 
@@ -103,7 +111,9 @@ Phase 2 — Three.js + GSAP
 - Uses GSAP (not CSS keyframes)
 - Pleasant timing with pause between rolls
 
-**Key concepts:** Each roll is a basic 90-degree rotation. After each roll, **reset** — zero the rotation and update the element's position to the new grid cell. This reset-per-roll pattern is the core technique. Chain rolls with `onComplete` callbacks — don't pre-build a long timeline since directions are random.
+**Key concepts:** Each roll is a basic 90-degree rotation. There are 4 possible roll directions in isometric space: top-right, bottom-right, bottom-left, top-left — each corresponds to a different rotation axis and translation vector. After each roll, **reset** — zero the rotation and update the element's position to the new grid cell. This reset-per-roll pattern is the core technique. Chain rolls with `onComplete` callbacks — don't pre-build a long timeline since directions are random. Use `gsap.delayedCall(pauseDuration, rollNext)` for pauses between rolls. Easing: `"power1.out"` (GSAP default) gives natural deceleration; `"power2.inOut"` gives a more physical roll-and-settle feel.
+
+**Skills:** `isometric-rolling-cube` for rolling technique, `gsap-expert` for GSAP API
 
 **Gotchas:** Watch out for — Rotation axis confusion, Cumulative rotation state, Grid snapping after rolls
 
@@ -114,11 +124,13 @@ Phase 2 — Three.js + GSAP
 **Goal:** Randomly choose from 4 isometric directions after each roll.
 
 **Acceptance criteria:**
-- Direction chosen randomly from: up-right, down-right, down-left, up-left
+- Direction chosen randomly from: top-right, bottom-right, bottom-left, top-left
 - Cube wanders the grid unpredictably
-- Direction logic accounts for the isometric coordinate system
+- Direction logic accounts for the isometric coordinate system (diagonal movement on screen corresponds to axis-aligned movement on the grid)
 
 **Key concepts:** Define directions as data (rotation axis + translation offset per direction). Separate animation concerns from direction/movement logic.
+
+**Skill:** `isometric-rolling-cube` — direction data tables for both CSS and Three.js
 
 ---
 
@@ -130,7 +142,9 @@ Phase 2 — Three.js + GSAP
 - Cube never partially or fully off-screen after a roll
 - Naturally changes direction at edges and corners
 
-**Key concepts:** Track logical grid position. Filter available directions before each roll — in corners, multiple directions may be invalid. Don't just re-roll once; filter the list.
+**Key concepts:** Track logical grid position (not just pixel position). Filter available directions before each roll — in corners, multiple directions may be invalid. Don't just re-roll once; filter the list. The isometric grid means "out of bounds" checks need to consider diagonal screen-space movement.
+
+**Skill:** `isometric-rolling-cube` — grid snapping and boundary logic
 
 ---
 
@@ -141,9 +155,11 @@ Phase 2 — Three.js + GSAP
 **Acceptance criteria:**
 - Cube visibly trends toward the cursor over time
 - Still has organic/random movement (bias, not deterministic path)
-- Reverts to random when cursor is inactive
+- Reverts to random when cursor is inactive or not over the viewport
 
-**Key concepts:** Calculate vector from cube to cursor, find the closest isometric direction, use weighted random selection.
+**Key concepts:** Calculate vector from cube to cursor, determine which of the 4 isometric directions best aligns with that vector, use weighted random selection (higher probability for cursor-aligned directions feels more natural than always picking the closest).
+
+**Skill:** `isometric-rolling-cube` — direction selection logic
 
 ---
 
@@ -154,7 +170,9 @@ Phase 2 — Three.js + GSAP
 **Acceptance criteria:**
 - Shaded 3D cube visible in the Three.js scene, positioned on the grid
 
-**Key concepts:** `BoxGeometry` + `MeshBasicMaterial`. Use an array of 6 `MeshBasicMaterial` instances for per-face colour — this matches the CSS approach and keeps things simple (no scene lighting needed).
+**Key concepts:** `BoxGeometry` + `MeshBasicMaterial`. Use an array of 6 `MeshBasicMaterial` instances for per-face colour (optional — can reuse the same material) — this matches the CSS approach and keeps things simple (no scene lighting needed). The boilerplate scene already includes a camera — just add the mesh.
+
+**Skills:** `threejs-fundamentals` for scene setup and BoxGeometry, `threejs-materials` for MeshBasicMaterial
 
 ---
 
@@ -165,7 +183,9 @@ Phase 2 — Three.js + GSAP
 **Acceptance criteria:**
 - Can articulate how camera maps world-space axes to screen-space diagonals
 
-**Key concepts:** Unlike CSS (rotate the scene), Three.js positions the camera for isometric view. World X/Z axes appear diagonal on screen. The camera has no perspective distortion.
+**Key concepts:** Unlike CSS (where the scene is rotated), Three.js positions the camera for isometric view. `OrthographicCamera` has no perspective distortion — parallel lines stay parallel, matching the CSS phase. World X/Z axes appear diagonal on screen. Understanding the camera's orientation helps reason about which Three.js axes correspond to which screen-space directions.
+
+**Skill:** `threejs-fundamentals` for camera and coordinate system concepts
 
 ---
 
@@ -178,7 +198,9 @@ Phase 2 — Three.js + GSAP
 - Random wandering with pauses between rolls
 - Same visual quality as Phase 1
 
-**Key concepts:** The Object3D pivot technique — create a temporary pivot at the rolling edge, `attach()` the cube to it, rotate the pivot, then `scene.attach(cube)` to detach. Target `mesh.rotation` and `mesh.position` directly with GSAP (not dot-path syntax on the mesh). Need a render loop (rAF, `onUpdate`, or `gsap.ticker`).
+**Key concepts:** The Object3D pivot technique — create a temporary pivot at the rolling edge, `pivot.attach(cube)` to reparent while preserving world transform, rotate the pivot with GSAP, then `scene.attach(cube)` to detach. Target sub-objects directly: `gsap.to(mesh.rotation, { x: ... })` and `gsap.to(mesh.position, { x: ..., z: ... })` — not dot-path syntax on the mesh. Need a render loop (rAF, `onUpdate`, or `gsap.ticker.add(() => renderer.render(scene, camera))`).
+
+**Skills:** `isometric-rolling-cube` for pivot technique and reparenting cycle, `gsap-expert` for GSAP API
 
 **Gotchas:** Watch out for — Pivot point in Three.js, GSAP + render loop, Euler rotation order, Grid snapping, `attach()` vs `add()`
 
@@ -191,7 +213,9 @@ Phase 2 — Three.js + GSAP
 **Acceptance criteria:**
 - Cube stays visible at all times
 
-**Key concepts:** The camera's `left/right/top/bottom` are camera-space, not world-space. Simplest approach: track logical grid position and define bounds in grid coordinates. Alternative: unproject frustum corners onto the ground plane.
+**Key concepts:** The camera's `left/right/top/bottom` are camera-space, not world-space — for a rotated isometric camera, these don't directly correspond to ground-plane boundaries. Simplest approach: track logical grid position and define bounds in grid coordinates, avoiding camera-to-world projection math entirely. Alternative: unproject frustum corners onto the ground plane for precise world-space bounds.
+
+**Skill:** `isometric-rolling-cube` — boundary logic and grid position tracking
 
 ---
 
@@ -202,7 +226,9 @@ Phase 2 — Three.js + GSAP
 **Acceptance criteria:**
 - Same as Task 1.6
 
-**Key concepts:** Use `Raycaster` or `Vector3.unproject()` to convert screen coords to world coords. With orthographic camera, the math is simpler. Direction-biasing logic from Phase 1 carries over directly.
+**Key concepts:** Use Three.js `Raycaster` or `Vector3.unproject()` to convert screen coordinates to world coordinates — with an orthographic camera, the math is simpler than with a perspective camera. Direction-biasing logic from Phase 1 carries over almost directly once cursor position is in world-space.
+
+**Skills:** `isometric-rolling-cube` for direction selection, `threejs-fundamentals` for coordinate conversion
 
 ---
 
@@ -221,16 +247,16 @@ When starting Phase 2, here's what carries over and what changes:
 | Boundary logic | Viewport pixel bounds | Grid coordinate bounds or frustum unprojection |
 | Cursor following | Screen-space vector math | Needs screen-to-world coordinate conversion |
 
-**What you can reuse directly:**
+**Reusable directly:**
 - Direction selection logic and boundary filtering
 - The `onComplete` chaining pattern for random roll sequencing
 - Grid position tracking (integer coordinates)
 - Cursor-bias weighting algorithm
 
-**What changes fundamentally:**
-- How you achieve the pivot point (biggest change)
+**Changes fundamentally:**
+- How the pivot point is achieved (biggest change)
 - How rotation state is managed (reset rotation to clean values after each roll)
-- You need to manage the render loop explicitly
+- The render loop must be managed explicitly
 
 ---
 
@@ -246,17 +272,35 @@ When starting Phase 2, here's what carries over and what changes:
 | Grid snapping after rolls | 1.3, 2.3 | Floating-point drift. Use `gsap.set()` to snap to exact grid coords in `onComplete`. |
 | `preserve-3d` not inherited | 1.1 | Must be set on every ancestor that needs to participate in 3D space. |
 | Pre-built timeline for random dirs | 1.3, 2.3 | Can't pre-build — directions are random. Use `onComplete` chaining instead. |
+| GSAP directional shortcuts on Three.js | 2.3 | `_cw`, `_short` and other GSAP directional shortcuts only work on DOM targets — use raw angle values for Three.js objects. |
 
 ---
 
-## Responding to `/guide`
+## Responding to `/workshop-guide`
 
 When invoked without arguments, give an overview of where the participant likely is (ask what they're working on if unclear) and suggest the next task.
 
-When invoked with a task ID (e.g. `/guide 1.3`):
+When invoked with a task ID (e.g. `/workshop-guide 1.3`):
 1. Show the task's goal and acceptance criteria
 2. List relevant gotchas for that task
-3. If they seem stuck, offer the key conceptual hint without giving away the implementation
-4. If they think they're done, walk through acceptance criteria as a checklist
+3. Point to the specialized skill for that task (listed under each task's **Skill:** field)
+4. If they seem stuck, offer the key conceptual hint without giving away the implementation
+5. If they think they're done, walk through acceptance criteria as a checklist
 
 When a participant says "I'm stuck" without a task ID, ask what they're seeing (error? visual bug? doesn't move?) and use the gotcha table to diagnose.
+
+---
+
+## Additional Resources
+
+### Reference Files
+
+- **`references/resources.md`** — External reference links and descriptions for all workshop technologies (Desandro, GSAP, Three.js, isometric projection)
+
+### Related Skills
+
+- `phase1-css-cube` — Desandro 6-div CSS cube technique, face positioning, `preserve-3d`, isometric projection
+- `isometric-rolling-cube` — Rolling animation, pivot technique, direction logic, grid snapping
+- `gsap-expert` — GSAP timelines, easing, callbacks, ScrollTrigger
+- `threejs-fundamentals` — Scene setup, Object3D hierarchy, coordinate systems, BoxGeometry
+- `threejs-materials` — MeshBasicMaterial, per-face colours

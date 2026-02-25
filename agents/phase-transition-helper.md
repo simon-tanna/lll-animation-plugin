@@ -25,15 +25,15 @@ Walk through each concept and explain how the participant's specific code maps t
 
 ### Cube Construction
 
-**CSS approach (their code):** Built from HTML elements with CSS 3D transforms. Likely uses the 2-div + pseudo-element technique with `transform-style: preserve-3d`.
+**CSS approach (their code):** Built from a 3-level HTML hierarchy (scene container → cube container → 6 child divs) using the Desandro technique. Each face div is rotated to its orientation then translated outward with `translateZ(halfSize)`. Side faces rotate around Y, top/bottom around X. `transform-style: preserve-3d` on the cube container creates the shared 3D space.
 
 **Three.js equivalent:** `new THREE.BoxGeometry(size, size, size)` + material. One line replaces all the face positioning CSS.
 
-**What to tell them:** The geometry is trivial in Three.js — `BoxGeometry` handles all 6 faces automatically. The effort shifts to understanding the scene graph and materials. Use `MeshBasicMaterial` with an array of 6 materials for per-face colour — this matches the CSS approach (explicit colour per face) and avoids needing scene lighting. Keep it simple.
+**What to tell them:** The mapping is direct — CSS had 6 explicit face divs, and `BoxGeometry` gives you 6 faces automatically. For per-face colour (matching the CSS approach), use `MeshBasicMaterial` with an array of 6 materials. Alternatively, a single material with one colour works too — per-face shading is optional. Either way, no scene lighting is needed. The effort shifts from positioning faces to understanding the scene graph and materials.
 
 ### Isometric View
 
-**CSS approach:** Container element with `transform: rotateX(35.264deg) rotateZ(45deg)` and `transform-style: preserve-3d`. The scene is rotated to create the view.
+**CSS approach:** The scene container is rotated on two axes to achieve the isometric viewing angle. The specific angles come from isometric projection math (the Wikipedia article on isometric projection explains the derivation). The rotation is applied to the scene/container element, not individual faces.
 
 **Three.js equivalent:** An `OrthographicCamera` positioned at an isometric angle. The boilerplate provides this already — they don't need to set it up.
 
@@ -76,11 +76,11 @@ Emphasise that `attach()` (not `add()`) is critical — it preserves the cube's 
 **CSS approach:** The browser handles rendering automatically. GSAP updates CSS values and the browser repaints.
 
 **Three.js equivalent:** You must explicitly call `renderer.render(scene, camera)` every frame. Three options:
-1. `requestAnimationFrame` loop (simplest)
-2. `gsap.ticker.add(() => renderer.render(scene, camera))` (syncs with GSAP)
-3. `onUpdate` callback per tween (renders only during animation)
+1. `gsap.ticker.add(() => renderer.render(scene, camera))` — synchronises rendering with GSAP's update cycle and avoids redundant frames (recommended)
+2. `requestAnimationFrame` loop (simple and reliable)
+3. `onUpdate` callback per tween (renders only during active animation — scene freezes between rolls)
 
-**What to tell them:** This is a new concept with no CSS equivalent. Recommend option 1 or 2. Without a render loop, GSAP will update values internally but nothing will appear on screen.
+**What to tell them:** This is a new concept with no CSS equivalent. Recommend option 1 (`gsap.ticker`) since it syncs rendering with GSAP's own update cycle. Option 2 is also fine. Without a render loop, GSAP will update values internally but nothing will appear on screen.
 
 ### Rotation Tracking
 
@@ -135,10 +135,11 @@ Structure your response as:
 Suggest this implementation order for Phase 2:
 
 1. **Add the cube to the scene** (Task 2.1) — `BoxGeometry` + material, verify it appears
-2. **Set up the render loop** — get something rendering before trying animation
-3. **Port the direction data** — adapt the 4-direction config from CSS to Three.js axes
-4. **Implement one roll** — get a single roll working in one direction with the pivot technique
-5. **Port the roll chaining** — connect `onComplete` to random direction selection
-6. **Port boundary logic** — adapt the direction filtering
-7. **Add grid snapping** — `gsap.set()` in `onComplete`
-8. **Test cumulative rotation** — roll 20+ times in random directions, check for drift or axis confusion
+2. **Understand the isometric camera** (Task 2.2) — review the boilerplate's `OrthographicCamera` setup. Understand how world X/Z axes map to diagonal screen directions. This informs all the direction data you'll port next
+3. **Set up the render loop** — get something rendering before trying animation
+4. **Port the direction data** — adapt the 4-direction config from CSS to Three.js axes
+5. **Implement one roll** — get a single roll working in one direction with the pivot technique
+6. **Port the roll chaining** — connect `onComplete` to random direction selection
+7. **Port boundary logic** — adapt the direction filtering
+8. **Add grid snapping** — `gsap.set()` in `onComplete`
+9. **Test cumulative rotation** — roll 20+ times in random directions, check for drift or axis confusion

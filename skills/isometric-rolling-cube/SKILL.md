@@ -1,12 +1,13 @@
 ---
 name: isometric-rolling-cube
 description: >
-  Pivot-point rolling technique for animating a cube tipping over its bottom edge
-  in isometric view. Covers both CSS transform-origin and Three.js Object3D pivot
-  approaches, GSAP animation chaining, cumulative rotation tracking, and grid snapping.
-  Use this skill whenever the user is working on rolling cube animation, edge-pivoting,
+  This skill should be used when the user is working on rolling cube animation, edge-pivoting,
   isometric cube movement, transform-origin animation, Object3D reparenting for rotation,
-  or grid-based cube wandering — even if they don't explicitly mention "rolling cube."
+  grid-based cube wandering, window boundary enforcement, direction selection logic,
+  cursor following, or weighted random direction bias — even if they don't explicitly
+  mention "rolling cube." Covers both CSS transform-origin and Three.js Object3D pivot
+  approaches, GSAP animation chaining, cumulative rotation tracking, grid snapping,
+  boundary checking, and cursor-biased direction selection.
 user-invocable: true
 argument-hint: "[topic] e.g. pivot, directions, reparenting, snapping"
 ---
@@ -17,16 +18,35 @@ A cube "rolls" by tipping 90 degrees over one of its bottom edges, translating o
 
 This skill covers the technique for both CSS (Phase 1) and Three.js (Phase 2) implementations, with GSAP driving the animation in both cases.
 
+## Invocation Behaviour
+
+When invoked without a specific topic, prompt for context:
+
+> Which aspect of rolling animation are you working on?
+>
+> | Topic           | Covers                                                    |
+> | --------------- | --------------------------------------------------------- |
+> | Rolling / pivot | CSS transform-origin or Three.js Object3D pivot technique |
+> | Directions      | The 4 isometric roll directions and data tables           |
+> | Boundaries      | Window boundary enforcement and direction filtering       |
+> | Cursor          | Cursor-following bias and weighted random selection       |
+> | Snapping        | Grid snapping and floating-point drift prevention         |
+> | Reparenting     | Three.js `attach()` vs `add()` and the pivot cycle        |
+>
+> Or describe what you need help with.
+
+When a specific topic is identified, jump directly to the relevant section. For CSS cube construction (faces, preserve-3d, isometric projection), delegate to the `phase1-css-cube` skill. For GSAP API specifics, delegate to the `gsap-expert` skill.
+
 ## The 4 Isometric Roll Directions
 
 In isometric view, the cube moves diagonally on screen. Each screen direction maps to a world-axis movement:
 
 | Screen Direction | World Direction (XZ) | Grid Delta |
-|------------------|---------------------|------------|
-| Up-Right | +X | (1, 0) |
-| Down-Right | +Z | (0, 1) |
-| Down-Left | -X | (-1, 0) |
-| Up-Left | -Z | (0, -1) |
+| ---------------- | -------------------- | ---------- |
+| Top-Right        | +X                   | (1, 0)     |
+| Bottom-Right     | +Z                   | (0, 1)     |
+| Bottom-Left      | -X                   | (-1, 0)    |
+| Top-Left         | -Z                   | (0, -1)    |
 
 For a unit cube (side length `S`), each direction has a corresponding **rotation axis**, **pivot offset**, and **translation vector**.
 
@@ -35,11 +55,11 @@ For a unit cube (side length `S`), each direction has a corresponding **rotation
 For a cube centred at `(gx, S/2, gz)`:
 
 | Direction | Translation | Pivot Offset from Centre | Rotation Axis | Angle |
-|-----------|------------|--------------------------|---------------|-------|
-| +X | (S, 0, 0) | (+S/2, -S/2, 0) | (0, 0, -1) | PI/2 |
-| -X | (-S, 0, 0) | (-S/2, -S/2, 0) | (0, 0, +1) | PI/2 |
-| +Z | (0, 0, S) | (0, -S/2, +S/2) | (+1, 0, 0) | PI/2 |
-| -Z | (0, 0, -S) | (0, -S/2, -S/2) | (-1, 0, 0) | PI/2 |
+| --------- | ----------- | ------------------------ | ------------- | ----- |
+| +X        | (S, 0, 0)   | (+S/2, -S/2, 0)          | (0, 0, -1)    | PI/2  |
+| -X        | (-S, 0, 0)  | (-S/2, -S/2, 0)          | (0, 0, +1)    | PI/2  |
+| +Z        | (0, 0, S)   | (0, -S/2, +S/2)          | (+1, 0, 0)    | PI/2  |
+| -Z        | (0, 0, -S)  | (0, -S/2, -S/2)          | (-1, 0, 0)    | PI/2  |
 
 The rotation axis can be derived: `cross(direction, downVector)` where `downVector = (0, -1, 0)`.
 
@@ -49,12 +69,12 @@ The pivot offset is always: half a cube-width toward the roll direction on the g
 
 In the CSS approach, the isometric rotation (`rotateX(35.264deg) rotateZ(45deg)`) is applied to a **container** element. The cube rolls in the container's local coordinate system (flat plane before rotation), so:
 
-| Direction | transform-origin | Rotation | Translation |
-|-----------|-----------------|----------|-------------|
-| Right (+X) | bottom-right edge | rotateZ(-90deg) | translateX(+S) |
-| Left (-X) | bottom-left edge | rotateZ(+90deg) | translateX(-S) |
-| Forward (-Y screen) | bottom-front edge | rotateX(+90deg) | translateY(-S) |
-| Backward (+Y screen) | bottom-back edge | rotateX(-90deg) | translateY(+S) |
+| Direction            | transform-origin  | Rotation        | Translation    |
+| -------------------- | ----------------- | --------------- | -------------- |
+| Right (+X)           | bottom-right edge | rotateZ(-90deg) | translateX(+S) |
+| Left (-X)            | bottom-left edge  | rotateZ(+90deg) | translateX(-S) |
+| Forward (-Y screen)  | bottom-front edge | rotateX(+90deg) | translateY(-S) |
+| Backward (+Y screen) | bottom-back edge  | rotateX(-90deg) | translateY(+S) |
 
 The `transform-origin` values need to target the specific bottom edge in 3D space. For a cube of side `S` centred at its own origin:
 
@@ -80,7 +100,7 @@ For each roll:
 
 ### The Reset Step (Core Technique)
 
-After a roll completes, the cube has rotated 90 degrees. You must "absorb" this into the base state:
+After a roll completes, the cube has rotated 90 degrees. Absorb this into the base state:
 
 - Move the element to its new grid position (CSS `left`/`top` or `translate`)
 - Zero out the roll rotation
@@ -151,6 +171,7 @@ Use `gsap.delayedCall(pauseDuration, rollNext)` to insert pauses between rolls �
 ### Targeting Three.js Objects with GSAP
 
 Target the sub-object, not the mesh itself:
+
 - Position: `gsap.to(mesh.position, { x: ..., z: ... })`
 - Rotation: `gsap.to(pivot.rotation, { z: angle })`
 
@@ -183,22 +204,76 @@ Track position as integer grid coordinates `(gridX, gridY)` alongside the render
 
 ---
 
+## Boundary Enforcement
+
+Prevent the cube from rolling off-screen by filtering valid directions before each roll.
+
+### Direction Filtering Algorithm
+
+Before each roll, check which of the 4 directions would keep the cube in bounds. The steps:
+
+1. Calculate the candidate position for each direction: `(gridX + deltaX, gridY + deltaY)`
+2. Check each candidate against the grid bounds
+3. Filter the directions list to only valid options
+4. Pick randomly from the filtered list
+
+Filtering is essential — re-rolling a single rejected direction is not enough, because in corners multiple directions may be invalid simultaneously.
+
+### CSS (Phase 1) — Viewport Pixel Bounds
+
+Track the cube's logical grid position `(gridX, gridY)` and convert to pixel coordinates to check against `window.innerWidth` / `window.innerHeight`. The isometric rotation means screen-space movement is diagonal — a single grid step moves the cube diagonally on screen, so bounds checks must account for both the X and Y pixel displacement per step.
+
+### Three.js (Phase 2) — Grid Coordinate Bounds
+
+The simplest approach: define bounds in grid coordinates and check the logical position directly, avoiding camera-to-world projection math entirely. The boilerplate's `OrthographicCamera` frustum properties (`left`, `right`, `top`, `bottom`) are in **camera-space**, not world-space — for the rotated isometric camera, these don't map directly to ground-plane boundaries.
+
+Alternative: unproject the frustum corners onto the ground plane for precise world-space bounds, but grid-coordinate bounds are simpler and sufficient for the workshop.
+
+---
+
+## Cursor Following
+
+Bias direction selection toward the cursor position. This is a weighted preference, not a deterministic path — the cube should still wander organically.
+
+### Direction Bias Algorithm
+
+1. Calculate the vector from the cube's current position to the cursor position
+2. For each of the 4 isometric directions, compute the dot product between the cursor vector and the direction's movement vector
+3. Assign higher probability to directions with larger positive dot products
+4. Use weighted random selection — directions aligned with the cursor get higher weight, but all valid directions remain possible
+
+A simple weighting scheme: give cursor-aligned directions 3x or 4x the weight of non-aligned directions. This produces a visible trend toward the cursor while preserving organic, random-looking movement.
+
+### Fallback to Random
+
+When the cursor is inactive or outside the viewport, revert to fully random direction selection (all valid directions weighted equally).
+
+### CSS (Phase 1) — Screen-Space Vector Math
+
+Both the cube position and cursor position are in screen-space pixels. Calculate the direction vector directly from pixel coordinates and compare against the 4 isometric screen-space direction vectors.
+
+### Three.js (Phase 2) — Screen-to-World Conversion
+
+Convert the screen-space cursor position to world-space coordinates before computing the direction vector. With an `OrthographicCamera`, the conversion is simpler than with a perspective camera — use `Vector3.unproject()` or `Raycaster` to project the cursor onto the ground plane (Y=0). The direction-biasing logic from Phase 1 carries over directly once the cursor position is in world-space.
+
+---
+
 ## Common Pitfalls
 
-| Pitfall | Symptom | Fix |
-|---------|---------|-----|
-| Pivot at centre, not edge | Cube spins in place | Position pivot at bottom edge using offset formula |
-| Using `add()` instead of `attach()` | Cube jumps when reparented | Always use `attach()` for both directions |
-| Euler angle accumulation | Unexpected rotation after 3-4 rolls | Reset rotation to clean multiples of PI/2 after each roll |
-| No grid snap | Cube drifts off grid over time | `gsap.set()` to round position in `onComplete` |
-| Pre-built timeline for random directions | Can't randomise; timeline is fixed | Use `onComplete` chaining, one roll per timeline |
-| GSAP directional shortcuts (`_cw`, `_short`) | Ignored or breaks on Three.js objects | These only work on DOM targets — use raw angle values |
-| No render loop | Scene doesn't update visually | Add `gsap.ticker.add(() => renderer.render(...))` |
-| Modifying boilerplate camera/scene | Breaks grid alignment | The starter repo's camera and grid are pre-configured — don't touch them |
+| Pitfall                                      | Symptom                               | Fix                                                                      |
+| -------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------ |
+| Pivot at centre, not edge                    | Cube spins in place                   | Position pivot at bottom edge using offset formula                       |
+| Using `add()` instead of `attach()`          | Cube jumps when reparented            | Always use `attach()` for both directions                                |
+| Euler angle accumulation                     | Unexpected rotation after 3-4 rolls   | Reset rotation to clean multiples of PI/2 after each roll                |
+| No grid snap                                 | Cube drifts off grid over time        | `gsap.set()` to round position in `onComplete`                           |
+| Pre-built timeline for random directions     | Can't randomise; timeline is fixed    | Use `onComplete` chaining, one roll per timeline                         |
+| GSAP directional shortcuts (`_cw`, `_short`) | Ignored or breaks on Three.js objects | These only work on DOM targets — use raw angle values                    |
+| No render loop                               | Scene doesn't update visually         | Add `gsap.ticker.add(() => renderer.render(...))`                        |
+| Modifying boilerplate camera/scene           | Breaks grid alignment                 | The starter repo's camera and grid are pre-configured — don't touch them |
 
 ## See Also
 
-- `css-3d-cube` — CSS cube construction (2-div approach, face transforms, preserve-3d)
+- `phase1-css-cube` — CSS cube construction (Desandro 6-div approach, face transforms, preserve-3d, isometric projection)
 - `workshop-guide` — Task progression, acceptance criteria, phase transitions
 - `gsap-expert` — Full GSAP API reference, timeline patterns, ScrollTrigger
 - `threejs-fundamentals` — Scene setup, Object3D hierarchy, coordinate system, math utilities

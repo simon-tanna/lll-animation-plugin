@@ -1,13 +1,10 @@
 ---
 name: css-3d-cube
 description: >
-  CSS 3D cube construction using the minimal 2-div + pseudo-element technique from
-  the Julia Miocene tutorial. Covers preserve-3d inheritance, face transforms, color-mix()
-  shading, and isometric projection angles. Use this skill whenever the user is building
-  a CSS cube, working with CSS 3D transforms, using transform-style preserve-3d,
-  constructing cube faces from pseudo-elements, or applying isometric projection with CSS.
-  Prefer this approach over a conventional 6-div cube structure.
-user-invocable: true
+  DEPRECATED — Use `phase1-css-cube` instead. This skill covers the old Julia Miocene 2-div +
+  pseudo-element technique. The workshop now uses the Desandro 6-div approach documented in
+  the phase1-css-cube skill. This skill is retained for reference only.
+user-invocable: false
 argument-hint: "[topic] e.g. faces, preserve-3d, color-mix, isometric"
 ---
 
