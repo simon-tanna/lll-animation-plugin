@@ -61,6 +61,18 @@ Once installed, participants can:
 - **Auto-invocation** — just ask a question naturally ("my cube is spinning in place") and Claude pulls in the relevant skill automatically based on topic
 - **Agents** — after completing the rolling animation (Task 1.3 or 2.3), the `animation-reviewer` agent can be invoked to check for common bugs. When starting Phase 2, the `phase-transition-helper` agent maps Phase 1 code to Three.js equivalents
 
+## Optional: Notion Integration
+
+The companion plugin `lll-animation-mcp` adds a Notion MCP server and `/fetch-spec` command for pulling the canonical workshop spec directly into your session.
+
+```bash
+claude /plugin install lll-animation-mcp@lll-animation-mcp-dev
+```
+
+This adds:
+- **`/fetch-spec [task-or-section]`** — Fetches the workshop spec from Notion. Use `/fetch-spec 1.3` for a specific task or `/fetch-spec` for the full overview.
+- **Notion MCP server** — Connects to [Notion MCP](https://mcp.notion.com/mcp) for reading the workshop spec. OAuth is handled on first use.
+
 ## Development
 
 To test locally after making changes:

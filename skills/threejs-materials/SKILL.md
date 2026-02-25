@@ -517,6 +517,5 @@ material.dispose();
 
 ## See Also
 
-- `threejs-textures` - Texture loading and configuration
-- `threejs-shaders` - Custom shader development
-- `threejs-lighting` - Light interaction with materials
+- `threejs-fundamentals` - Scene setup, Object3D hierarchy, coordinate systems
+- `threejs-animation` - Keyframe animation, morph targets, animation mixing

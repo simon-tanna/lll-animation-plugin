@@ -1,6 +1,6 @@
 ---
 name: gsap-expert
-description: A pro on gsap animation library framework
+description: "This skill should be used when the user needs GSAP v3 API reference, animation patterns, timeline composition, easing functions, ticker integration, or plugin usage guidance."
 user-invocable: true
 argument-hint: "[topic] e.g. timeline, onComplete, easing, ticker"
 ---

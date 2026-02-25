@@ -1,0 +1,15 @@
+{
+  "name": "lll-animation-mcp",
+  "version": "1.0.0",
+  "description": "Optional Notion MCP integration for the LLL Animation Workshop plugin. Adds the /fetch-spec command and connects to the workshop spec in Notion.",
+  "author": {
+    "name": "Simon Tanna"
+  },
+  "license": "MIT",
+  "keywords": [
+    "animation",
+    "workshop",
+    "notion",
+    "mcp"
+  ]
+}

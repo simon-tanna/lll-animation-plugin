@@ -410,7 +410,6 @@ window.addEventListener("resize", onResize);
 
 ## See Also
 
-- `threejs-geometry` — Geometry creation and manipulation
 - `threejs-materials` — Material types and properties
-- `threejs-lighting` — Light types and shadows
+- `threejs-animation` — Keyframe animation, skeletal animation, morph targets
 - `isometric-rolling-cube` — Rolling animation technique using the pivot pattern
