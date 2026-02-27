@@ -28,17 +28,14 @@ document.body.appendChild(renderer.domElement);
 
 // Add a mesh
 const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+// MeshBasicMaterial needs no lighting — matches workshop Task 2.1
+const material = new THREE.MeshBasicMaterial({ color: 0x4fd1c5 });
 const cube = new THREE.Mesh(geometry, material);
 scene.add(cube);
 
-// Add light
-scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-dirLight.position.set(5, 5, 5);
-scene.add(dirLight);
-
-camera.position.z = 5;
+// Note: for an OrthographicCamera (used in the workshop), position the camera
+// at an isometric angle rather than straight-on. The boilerplate provides this.
+camera.position.z = 5; // example for PerspectiveCamera only
 
 // Animation loop — Three.js does NOT render automatically
 function animate() {
@@ -49,9 +46,9 @@ function animate() {
 }
 animate();
 
-// Handle resize
+// Handle resize (PerspectiveCamera — OrthographicCamera uses left/right/top/bottom instead)
 window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.aspect = window.innerWidth / window.innerHeight; // PerspectiveCamera only
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });

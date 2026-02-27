@@ -5,6 +5,8 @@ user-invocable: true
 argument-hint: "[topic] e.g. keyframes, mixer, morph, clock"
 ---
 
+> **Workshop note:** This workshop drives all animation with GSAP — see the `gsap-expert` skill for rolling animation, timelines, and easing. This skill covers Three.js-native animation (keyframe tracks, `AnimationMixer`, skeletal animation, morph targets) which are not used in the LLL Animation Workshop.
+
 # Three.js Animation
 
 ## Quick Start

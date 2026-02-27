@@ -2,11 +2,11 @@
 name: phase1-css-cube
 description: >
   This skill should be used when the user asks to "build a CSS 3D cube", "construct cube faces",
-  "implement Phase 1", "position faces with translateZ", "set up preserve-3d", "apply isometric
-  projection", "work on task 1.1", "work on task 1.2", "create a 6-div cube", "add face shading",
-  or is researching, planning, or implementing any step in Phase 1 (Tasks 1.1–1.6) of the LLL
-  Animation Workshop. Covers the Desandro 6-div cube construction technique with rotate +
-  translateZ face positioning, isometric projection, and Phase 1 task guidance.
+  "position faces with translateZ", "set up preserve-3d", "apply isometric projection",
+  "work on task 1.1", "work on task 1.2", "create a 6-div cube", or "add face shading".
+  Covers Tasks 1.1–1.2 only: the Desandro 6-div cube construction technique with rotate +
+  translateZ face positioning, and isometric projection. For Tasks 1.3–1.6 (rolling,
+  directions, boundaries, cursor), use the `isometric-rolling-cube` skill.
   Replaces the deprecated css-3d-cube skill (Julia Miocene 2-div approach).
 user-invocable: true
 argument-hint: "[topic] e.g. faces, preserve-3d, isometric, translateZ, task 1.1"
@@ -214,6 +214,7 @@ For Tasks 1.3–1.6, load the `isometric-rolling-cube` skill for rolling animati
 ## Related Skills
 
 - `isometric-rolling-cube` — Rolling animation, pivot technique, direction logic, boundary enforcement
+- `react-integration` — Using GSAP with React refs (`useRef`, `useEffect`), JSX differences from HTML
 - `workshop-guide` — Task-by-task navigation, acceptance criteria, "what do I do next?"
 - `gsap-expert` — GSAP timelines, easing, callbacks
 

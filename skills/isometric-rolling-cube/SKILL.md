@@ -67,23 +67,9 @@ The pivot offset is always: half a cube-width toward the roll direction on the g
 
 ### Direction Data (CSS — pre-isometric flat plane)
 
-In the CSS approach, the isometric rotation (`rotateX(-35.264deg) rotateY(45deg)`) is applied to the **perspective container**. The cube rolls in the container's local coordinate system (flat plane before rotation), so:
+Full `transform-origin` values and translation vectors for all 4 directions: see `references/direction-data.md`.
 
-| Direction            | transform-origin  | Rotation        | Translation    |
-| -------------------- | ----------------- | --------------- | -------------- |
-| Top-Right (+X)       | bottom-right edge | rotateZ(-90deg) | translateX(+S) |
-| Bottom-Left (-X)     | bottom-left edge  | rotateZ(+90deg) | translateX(-S) |
-| Bottom-Right (-Y)    | bottom-front edge | rotateX(+90deg) | translateY(-S) |
-| Top-Left (+Y)        | bottom-back edge  | rotateX(-90deg) | translateY(+S) |
-
-The `transform-origin` values need to target the specific bottom edge in 3D space. For a cube of side `S` centred at its own origin:
-
-- Right: `transform-origin: S S/2 0` (right face, vertical centre, front)
-- Left: `transform-origin: 0 S/2 0`
-- Forward: `transform-origin: S/2 S/2 -S/2`
-- Backward: `transform-origin: S/2 S/2 S/2`
-
-The exact values depend on how the cube's faces are positioned (which in turn depends on the construction approach). The principle is always the same: origin goes to the bottom edge in the roll direction.
+Key principle: `transform-origin` must be a **3D value (three components)** targeting the specific bottom edge for each direction. A 2D value places the pivot at Z=0, which is wrong for the Bottom-Right and Top-Left directions (those need a non-zero Z component).
 
 ---
 
@@ -183,11 +169,28 @@ Do NOT use dot-path syntax on the mesh: `gsap.to(mesh, { "rotation.x": angle })`
 - `"power1.out"` (GSAP default) also works well for a lighter landing
 - Experiment encouraged — the "right" ease is subjective
 
+### The Landing Jump (yoyo)
+
+Add a natural bounce at each landing with `yoyo: true`:
+
+```js
+// Runs alongside the roll animation — plays up then automatically reverses
+gsap.to(positionContainer, {
+  y: -jumpHeight,
+  duration: rollDuration / 2,
+  yoyo: true,
+  repeat: 1,
+  ease: "power2.out"
+})
+```
+
+`yoyo: true` with `repeat: 1` plays the tween forward then automatically reverses — the position container rises then falls back, producing the characteristic up-then-down bounce at each landing.
+
 ### Render Loop
 
 GSAP tweens values but does not trigger Three.js renders. Three options:
 
-1. **Continuous rAF loop** — `requestAnimationFrame` that calls `renderer.render()` every frame. Simple, always works.
+1. **Continuous rAF loop** — `requestAnimationFrame` that calls `renderer.render()` every frame. Simple, always works. **(spec preferred — the boilerplate provides this)**
 2. **GSAP onUpdate** — call `renderer.render()` inside each tween's `onUpdate`. Renders only during animation but misses static scene updates.
 3. **gsap.ticker** — `gsap.ticker.add(() => renderer.render(scene, camera))`. Synchronises rendering with GSAP's update cycle. Good middle ground.
 
@@ -206,55 +209,13 @@ Track position as integer grid coordinates `(gridX, gridY)` alongside the render
 
 ## Boundary Enforcement
 
-Prevent the cube from rolling off-screen by filtering valid directions before each roll.
-
-### Direction Filtering Algorithm
-
-Before each roll, check which of the 4 directions would keep the cube in bounds. The steps:
-
-1. Calculate the candidate position for each direction: `(gridX + deltaX, gridY + deltaY)`
-2. Check each candidate against the grid bounds
-3. Filter the directions list to only valid options
-4. Pick randomly from the filtered list
-
-Filtering is essential — re-rolling a single rejected direction is not enough, because in corners multiple directions may be invalid simultaneously.
-
-### CSS (Phase 1) — Viewport Pixel Bounds
-
-Track the cube's logical grid position `(gridX, gridY)` and convert to pixel coordinates to check against `window.innerWidth` / `window.innerHeight`. The isometric rotation means screen-space movement is diagonal — a single grid step moves the cube diagonally on screen, so bounds checks must account for both the X and Y pixel displacement per step.
-
-### Three.js (Phase 2) — Grid Coordinate Bounds
-
-The simplest approach: define bounds in grid coordinates and check the logical position directly, avoiding camera-to-world projection math entirely. The boilerplate's `OrthographicCamera` frustum properties (`left`, `right`, `top`, `bottom`) are in **camera-space**, not world-space — for the rotated isometric camera, these don't map directly to ground-plane boundaries.
-
-Alternative: unproject the frustum corners onto the ground plane for precise world-space bounds, but grid-coordinate bounds are simpler and sufficient for the workshop.
+Before each roll, filter valid directions against grid bounds. See `references/boundary-algorithm.md` for the full direction filtering algorithm, CSS viewport-pixel bounds approach, and Three.js grid-coordinate bounds approach.
 
 ---
 
 ## Cursor Following
 
-Bias direction selection toward the cursor position. This is a weighted preference, not a deterministic path — the cube should still wander organically.
-
-### Direction Bias Algorithm
-
-1. Calculate the vector from the cube's current position to the cursor position
-2. For each of the 4 isometric directions, compute the dot product between the cursor vector and the direction's movement vector
-3. Assign higher probability to directions with larger positive dot products
-4. Use weighted random selection — directions aligned with the cursor get higher weight, but all valid directions remain possible
-
-A simple weighting scheme: give cursor-aligned directions 3x or 4x the weight of non-aligned directions. This produces a visible trend toward the cursor while preserving organic, random-looking movement.
-
-### Fallback to Random
-
-When the cursor is inactive or outside the viewport, revert to fully random direction selection (all valid directions weighted equally).
-
-### CSS (Phase 1) — Screen-Space Vector Math
-
-Both the cube position and cursor position are in screen-space pixels. Calculate the direction vector directly from pixel coordinates and compare against the 4 isometric screen-space direction vectors.
-
-### Three.js (Phase 2) — Screen-to-World Conversion
-
-Convert the screen-space cursor position to world-space coordinates before computing the direction vector. With an `OrthographicCamera`, the conversion is simpler than with a perspective camera — use `Vector3.unproject()` or `Raycaster` to project the cursor onto the ground plane (Y=0). The direction-biasing logic from Phase 1 carries over directly once the cursor position is in world-space.
+Weighted direction bias toward cursor position. See `references/boundary-algorithm.md` for the full bias algorithm, CSS screen-space approach, and Three.js `Vector3.unproject()` conversion for world-space cursor coordinates.
 
 ---
 

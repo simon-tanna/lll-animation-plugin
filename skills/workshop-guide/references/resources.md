@@ -38,3 +38,11 @@ Key reference materials for the LLL Animation Workshop, organised by phase and t
 ## Workshop Spec
 
 - **[LLL Animation Spec (Notion)](https://www.notion.so/LLL-Animation-Spec-30dced2a7e13804eb784d06ef1b9e6a9)** — The canonical workshop specification with all task requirements, hints, and acceptance criteria.
+
+## Facilitator Guides
+
+These documents were added by the workshop facilitator and provide additional architectural context beyond the spec:
+
+- **[Crash Course: 3D cube animations (CSS vs Three.js)](https://www.notion.so/labrys/Crash-Course-3D-cube-animations-CSS-vs-Three-js-313ced2a7e13801eb0f8e5ed0057e568)** — Explains the 3-container CSS architecture (position/perspective/modeled-cube separation), the `THREE.Group` isometric container, and the `yoyo` jump effect. Good conceptual overview of how both phases work architecturally.
+
+- **[3D Cube CSS vs Three.js — Performance Comparison](https://www.notion.so/labrys/3D-Cube-CSS-vs-Three-js-30bced2a7e138077b50ce60c97faddd2)** — Explains why CSS is fine for a single cube but Three.js/WebGL is needed for 1,000+ cubes. Useful context for Phase 2 motivation.
