@@ -1,7 +1,7 @@
 ---
 name: react-integration
 description: >
-  Use when a participant asks how to use GSAP or Three.js inside a React
+  This skill should be used when a participant asks how to use GSAP or Three.js inside a React
   component, how to target DOM elements with GSAP in React, how to set up
   a Three.js scene in a useEffect, or why their animation works in vanilla
   JS but not in their .tsx file.
@@ -15,7 +15,7 @@ The LLL Animation Workshop uses Vite + React TypeScript. GSAP and Three.js both 
 
 ## Why React Changes Things
 
-React manages the DOM — your components render JSX which React turns into real DOM elements. This creates two challenges for animation libraries:
+React manages the DOM — components render JSX which React turns into real DOM elements. This creates two challenges for animation libraries:
 
 1. **Timing:** At the time a component function runs, the DOM elements it describes may not exist yet. GSAP cannot target elements that don't exist.
 2. **Refs, not queries:** `document.querySelector('.cube')` is fragile in React. Use `useRef` to get a stable reference to the specific element in your component instance.

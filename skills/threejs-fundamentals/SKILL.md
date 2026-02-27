@@ -1,6 +1,9 @@
 ---
 name: threejs-fundamentals
-description: Three.js scene setup, cameras, renderer, Object3D hierarchy, coordinate systems. Use when setting up 3D scenes, creating cameras, configuring renderers, managing object hierarchies, or working with transforms.
+description: >
+  This skill should be used when setting up 3D scenes, creating cameras, configuring
+  renderers, managing object hierarchies, or working with transforms. Covers scene
+  setup, cameras, renderer, Object3D hierarchy, and coordinate systems.
 user-invocable: true
 argument-hint: "[topic] e.g. camera, Object3D, attach, pivot, quaternion"
 ---

@@ -13,7 +13,7 @@ Then restart Claude Code.
 
 ## What's Included
 
-### Skills (7)
+### Skills (8)
 
 All skills are dual-mode: Claude auto-invokes them when the conversation topic matches, and participants can also invoke them directly as slash commands. Several skills include detailed reference files (GSAP API docs, Desandro technique walkthrough, external resource links) that load on demand — keeping context lean while providing deep documentation when needed.
 
@@ -26,6 +26,7 @@ All skills are dual-mode: Claude auto-invokes them when the conversation topic m
 | `threejs-fundamentals` | `/threejs-fundamentals [topic]` | Scene setup, cameras, renderer, Object3D hierarchy, coordinate systems. |
 | `threejs-animation` | `/threejs-animation [topic]` | Keyframe animation, skeletal animation, morph targets, animation mixing. |
 | `threejs-materials` | `/threejs-materials [topic]` | PBR materials, Phong, shader materials, material properties and optimisation. |
+| `react-integration` | `/react-integration [topic]` | GSAP and Three.js integration patterns for React — `useRef`, `useEffect`, cleanup, and JSX differences from HTML. |
 
 ### Agents (2)
 

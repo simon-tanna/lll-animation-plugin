@@ -1,12 +1,12 @@
 ---
 name: workshop-guide
 description: >
-  LLL Animation Workshop navigator. Provides task-by-task guidance, acceptance criteria,
-  gotcha warnings, and phase transition help for the 3-hour rolling cube workshop.
   This skill should be used when a participant asks "what do I do next?", "I'm stuck",
   "what should I work on?", asks about a specific task number (e.g. "help with 1.3"),
-  wants to check if their work is done, or needs to understand the workshop structure.
-  Also triggered when someone mentions Phase 1, Phase 2, or any task by number.
+  wants to check if their work is done, or needs to understand the workshop structure,
+  or mentions Phase 1, Phase 2, or any task by number. Provides task-by-task guidance,
+  acceptance criteria, gotcha warnings, and phase transition help for the 3-hour
+  rolling cube workshop.
 user-invocable: true
 argument-hint: "[task-id] e.g. 1.3, 2.1, or blank for overview"
 ---

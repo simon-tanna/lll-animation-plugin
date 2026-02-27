@@ -1,6 +1,6 @@
 ---
 description: Fetch the LLL Animation Workshop spec from Notion
-argument-hint: [task-number-or-section]
+argument-hint: "[task-number-or-section]"
 ---
 
 Use the plugin's Notion MCP server to fetch the LLL Animation Workshop specification.
