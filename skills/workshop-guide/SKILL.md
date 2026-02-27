@@ -21,6 +21,14 @@ Participants receive a starter repo with a working Vite/React TypeScript app, an
 
 **End result:** A mint/teal 3D cube in isometric view that continuously rolls across the grid — tumbling face-to-face in random directions, bouncing off window boundaries.
 
+## Starter Repository
+
+Pre-configured: Vite + React TypeScript, isometric diamond grid background, `OrthographicCamera` and RAF render loop (Phase 2 boilerplate), all dependencies installed (GSAP, Three.js).
+
+**Do not modify:** the camera, the grid, or the boilerplate render loop.
+
+**Component files:** `Cube.tsx` (Phase 1 — write your CSS cube here), `Cube3D.tsx` (Phase 2 — write your Three.js cube here).
+
 ## Workshop Structure
 
 | Phase | Duration | Stack | Focus |
@@ -67,7 +75,7 @@ Phase 2 — Three.js + GSAP
 
 ### Task 1.1 — Construct the 3D Cube
 
-**Goal:** Create a static 3D cube using CSS transforms with a 3-level HTML hierarchy (scene container, cube container, 6 face divs).
+**Goal:** Create a static 3D cube using CSS transforms with a 3-container hierarchy (position container, perspective container, cube, 6 face divs).
 
 **Acceptance criteria:**
 - A static, correctly-formed 3D cube visible in the browser
@@ -75,7 +83,7 @@ Phase 2 — Three.js + GSAP
 - Distinguishable shading on each face
 - Uses CSS custom properties for dimensions
 
-**Key concepts:** `transform-style: preserve-3d` (not inherited — set on every element whose children participate in 3D space), rotate + `translateZ(halfSize)` face positioning pattern, `color-mix()` for face shading from a single base colour.
+**Key concepts:** Use three nested containers — position container (GSAP animates x/y only), perspective container (static isometric rotation, never animated), cube (GSAP animates rolling rotation only). GSAP overwrites the full `transform` property — mixing position and rotation on one element breaks both. `transform-style: preserve-3d` (not inherited — set on every element whose children participate in 3D space), rotate + `translateZ(halfSize)` face positioning pattern, `color-mix()` for face shading from a single base colour.
 
 **Skill:** `phase1-css-cube` — full Desandro 6-div technique, code examples, and `preserve-3d` deep dive
 
@@ -111,7 +119,7 @@ Phase 2 — Three.js + GSAP
 - Uses GSAP (not CSS keyframes)
 - Pleasant timing with pause between rolls
 
-**Key concepts:** Each roll is a basic 90-degree rotation. There are 4 possible roll directions in isometric space: top-right, bottom-right, bottom-left, top-left — each corresponds to a different rotation axis and translation vector. After each roll, **reset** — zero the rotation and update the element's position to the new grid cell. This reset-per-roll pattern is the core technique. Chain rolls with `onComplete` callbacks — don't pre-build a long timeline since directions are random. Use `gsap.delayedCall(pauseDuration, rollNext)` for pauses between rolls. Easing: `"power1.out"` (GSAP default) gives natural deceleration; `"power2.inOut"` gives a more physical roll-and-settle feel.
+**Key concepts:** Each roll is a basic 90-degree rotation. There are 4 possible roll directions in isometric space: top-right, bottom-right, bottom-left, top-left — each corresponds to a different rotation axis and translation vector. After each roll, **reset** — zero the rotation and update the element's position to the new grid cell. This reset-per-roll pattern is the core technique. Chain rolls with `onComplete` callbacks — don't pre-build a long timeline since directions are random. Use `gsap.delayedCall(pauseDuration, rollNext)` for pauses between rolls. Easing: `"power1.out"` (GSAP default) gives natural deceleration; `"power2.inOut"` gives a more physical roll-and-settle feel. Optional landing jump: `gsap.to(positionContainer, { y: -jumpHeight, duration: rollDuration / 2, yoyo: true, repeat: 1, ease: "power2.out" })` — `yoyo: true` with `repeat: 1` plays the tween forward then automatically reverses, producing a natural up-then-down bounce on each landing.
 
 **Skills:** `isometric-rolling-cube` for rolling technique, `gsap-expert` for GSAP API
 
@@ -198,7 +206,7 @@ Phase 2 — Three.js + GSAP
 - Random wandering with pauses between rolls
 - Same visual quality as Phase 1
 
-**Key concepts:** The Object3D pivot technique — create a temporary pivot at the rolling edge, `pivot.attach(cube)` to reparent while preserving world transform, rotate the pivot with GSAP, then `scene.attach(cube)` to detach. Target sub-objects directly: `gsap.to(mesh.rotation, { x: ... })` and `gsap.to(mesh.position, { x: ..., z: ... })` — not dot-path syntax on the mesh. Need a render loop (rAF, `onUpdate`, or `gsap.ticker.add(() => renderer.render(scene, camera))`).
+**Key concepts:** The Object3D pivot technique — create a temporary pivot at the rolling edge, `pivot.attach(cube)` to reparent while preserving world transform, rotate the pivot with GSAP, then `scene.attach(cube)` to detach. Target sub-objects directly: `gsap.to(mesh.rotation, { x: ... })` and `gsap.to(mesh.position, { x: ..., z: ... })` — not dot-path syntax on the mesh. Need a render loop (rAF, `onUpdate`, or `gsap.ticker.add(() => renderer.render(scene, camera))`). Note: when using the pivot technique, GSAP targets `pivot.rotation`, not `mesh.rotation` directly. The spec's `gsap.to(mesh.rotation, ...)` example illustrates GSAP's sub-object targeting syntax — in the pivot implementation, `pivot` is the actual animated target.
 
 **Skills:** `isometric-rolling-cube` for pivot technique and reparenting cycle, `gsap-expert` for GSAP API
 
@@ -239,7 +247,7 @@ When starting Phase 2, here's what carries over and what changes:
 | Concept | Phase 1 (CSS) | Phase 2 (Three.js) |
 |---------|--------------|-------------------|
 | Cube construction | HTML elements + CSS transforms | `BoxGeometry` + `Material` |
-| Isometric view | 3 containers: position (x/y only), perspective (`rotateX(-35.264deg) rotateY(45deg)`), cube (roll only). The two CSS containers collapse into one `THREE.Group` in Three.js. | `OrthographicCamera` + `THREE.Group` with static isometric rotation |
+| Isometric view | 3 containers: position (x/y only), perspective (`rotateX(-35.264deg) rotateY(45deg)`), cube (roll only). The position and perspective containers collapse into one `THREE.Group` (with static isometric rotation); the cube element maps to the mesh. | `OrthographicCamera` + `THREE.Group` with static isometric rotation |
 | Pivot point | Basic rotation + reset in `onComplete` | Temporary `Object3D` at edge + `attach()` reparenting |
 | Roll animation | GSAP tweens CSS properties | GSAP tweens `mesh.rotation` / `mesh.position` sub-objects |
 | Render trigger | Browser handles CSS rendering | Need explicit render loop (rAF or `gsap.ticker`) |
@@ -265,6 +273,7 @@ When starting Phase 2, here's what carries over and what changes:
 | Gotcha | Relevant Tasks | What Goes Wrong |
 |--------|---------------|-----------------|
 | Rotation axis confusion | 1.2, 1.3, 2.3 | Visual "right" on screen is diagonal in world-space. Each roll direction maps to a different axis. |
+| `transform-origin` misconfiguration | 1.3, 1.4 | CSS only. A 2D `transform-origin` (two values) places the pivot at Z=0, which is wrong for the Bottom-Right and Top-Left directions (those need a non-zero Z component). Must be a 3D value (three components) targeting the specific bottom edge in 3D space. Distinct from rotation axis confusion — axis can be correct while `transform-origin` is still wrong. |
 | Cumulative rotation state | 1.3, 2.3 | After several rolls, local axes have shifted. Must track or reset orientation. |
 | Euler rotation order | 2.3 | Three.js defaults to 'XYZ'. Multiple 90-degree rolls across axes → drift. Reset rotation to clean multiples of PI/2 after each roll. |
 | Pivot point in Three.js | 2.3 | No `transform-origin` equivalent. Must use parent `Object3D` technique. Use `attach()` not `add()`. |

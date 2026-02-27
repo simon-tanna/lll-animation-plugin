@@ -119,7 +119,7 @@ function Cube3D() {
 
 ### Key Points
 
-- Use `useRef<HTMLCanvasElement>` for the canvas element and pass it to `WebGLRenderer`.
+- Use `useRef<HTMLCanvasElement>` for the canvas element if you need to pass it to `WebGLRenderer` — the workshop boilerplate handles this for you, but the pattern is the same.
 - All Three.js setup goes inside `useEffect` — the canvas must exist in the DOM first.
 - Don't create a duplicate render loop — the boilerplate's RAF loop is already running.
 - Clean up `geometry.dispose()` and `material.dispose()` on unmount to free GPU memory.

@@ -43,24 +43,51 @@ If the user mentions "rolling", "animation", "direction", or "boundaries" withou
 
 When the user specifies a topic (e.g. "preserve-3d", "face positioning"), skip the prompt and address it directly using the relevant sections below.
 
-## HTML Structure
+## The 3-Container Architecture
 
-Use a 3-tier hierarchy — scene container, cube container, 6 face divs:
+The workshop uses three nested containers, each with exactly one transform responsibility:
 
-```html
-<div class="scene">
-  <div class="cube">
-    <div class="cube__face cube__face--front">front</div>
-    <div class="cube__face cube__face--back">back</div>
-    <div class="cube__face cube__face--right">right</div>
-    <div class="cube__face cube__face--left">left</div>
-    <div class="cube__face cube__face--top">top</div>
-    <div class="cube__face cube__face--bottom">bottom</div>
+```
+Position container    → GSAP animates x/y translation only (never rotated)
+Perspective container → static isometric rotation, never animated by GSAP
+Cube container        → GSAP animates rolling rotation only (never translated)
+```
+
+**Why this matters:** GSAP overwrites the entire CSS `transform` property when it animates. If the isometric rotation and the x/y position are on the same element, GSAP's position animation destroys the isometric rotation. Separating them into three containers prevents this conflict.
+
+In JSX:
+```tsx
+<div ref={positionRef} className="position-container">   {/* GSAP translates */}
+  <div className="perspective-container">                {/* static isometric rotation */}
+    <div ref={cubeRef} className="cube">                 {/* GSAP rotates for roll */}
+      {/* face divs */}
+    </div>
   </div>
 </div>
 ```
 
-**Roles:** The `.scene` provides perspective context (or isometric container). The `.cube` establishes the 3D space with `preserve-3d`. The 6 face divs are positioned within that space.
+For GSAP targeting in React (using refs), see the `react-integration` skill.
+
+## HTML Structure
+
+Use a 3-container hierarchy — position container, perspective container, cube, 6 face divs:
+
+```html
+<div class="position-container">    <!-- translates x/y — GSAP target for movement -->
+  <div class="perspective-container">  <!-- static isometric rotation — never animated -->
+    <div class="cube">              <!-- rolling rotation — GSAP target for rolling -->
+      <div class="cube__face cube__face--front">front</div>
+      <div class="cube__face cube__face--back">back</div>
+      <div class="cube__face cube__face--right">right</div>
+      <div class="cube__face cube__face--left">left</div>
+      <div class="cube__face cube__face--top">top</div>
+      <div class="cube__face cube__face--bottom">bottom</div>
+    </div>
+  </div>
+</div>
+```
+
+**Roles:** `.position-container` is the GSAP target for x/y movement. `.perspective-container` holds the static isometric rotation (`rotateX(-35.264deg) rotateY(45deg)`) and is never animated. `.cube` establishes `preserve-3d` for the faces and is the GSAP target for rolling rotation.
 
 ## Face Positioning — The Core Pattern
 

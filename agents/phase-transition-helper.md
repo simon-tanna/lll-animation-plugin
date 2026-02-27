@@ -31,6 +31,8 @@ Walk through each concept and explain how the participant's specific code maps t
 
 **What to tell them:** The mapping is direct — CSS had 6 explicit face divs, and `BoxGeometry` gives you 6 faces automatically. For per-face colour (matching the CSS approach), use `MeshBasicMaterial` with an array of 6 materials. Alternatively, a single material with one colour works too — per-face shading is optional. Either way, no scene lighting is needed. The effort shifts from positioning faces to understanding the scene graph and materials.
 
+**`backface-visibility`:** If their Phase 1 code uses `backface-visibility: hidden` on face divs (hides faces rotating away from the viewer), the Three.js equivalent is `material.side = THREE.FrontSide` — which is the default. They likely don't need to add anything. `THREE.DoubleSide` would be the equivalent of NOT using `backface-visibility: hidden`.
+
 ### Isometric View
 
 **CSS approach:** The scene container is rotated on two axes to achieve the isometric viewing angle. The specific angles come from isometric projection math (the Wikipedia article on isometric projection explains the derivation). The rotation is applied to the scene/container element, not individual faces.
@@ -44,6 +46,10 @@ Walk through each concept and explain how the participant's specific code maps t
 - They need to think in world coordinates, not screen coordinates
 
 **Note:** The exact axis-to-screen mapping depends on the boilerplate's camera position and orientation. Verify the mapping above against the actual starter repo before relying on it.
+
+**THREE.Group as unified container:** In Three.js, the two CSS containers (position container + perspective container) can collapse into a single `THREE.Group`. The boilerplate's `OrthographicCamera` already provides the isometric viewing angle, so you may not need a Group for the isometric rotation at all — just add the cube directly to the scene and move it in world-space. However, if the boilerplate uses a Group for the isometric tilt, Three.js does not need two separate parent objects the way CSS does (because Three.js stores position and rotation as separate properties, not as a single overwritable `transform` string).
+
+**Important for the pivot cycle:** If the cube lives inside a Group (`isoGroup.add(cube)`), then after each roll's cleanup (step 5 of the pivot cycle), re-attach the cube back to `isoGroup` — not just to the scene. Use `isoGroup.attach(cube)` to preserve world position. Leaving the cube as a scene child after rolling breaks the group architecture.
 
 ### Pivot Point (The Big Change)
 
@@ -143,3 +149,5 @@ Suggest this implementation order for Phase 2:
 7. **Port boundary logic** — adapt the direction filtering
 8. **Add grid snapping** — `gsap.set()` in `onComplete`
 9. **Test cumulative rotation** — roll 20+ times in random directions, check for drift or axis confusion
+
+Once a single roll works in Three.js (step 5 above), run the **`animation-reviewer`** agent to catch common failure modes before building direction selection. It is much easier to fix pivot and reset bugs now than after the full rolling system is wired up.

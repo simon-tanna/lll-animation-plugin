@@ -9,7 +9,7 @@ Full task requirements, hints, and acceptance criteria for Phase 1 (CSS + GSAP) 
 **Goal:** Create a static 3D cube using CSS transforms. The cube is built from HTML elements (divs), not a canvas.
 
 **Requirements:**
-- Use a 3-level HTML hierarchy: a scene container, a cube container, and 6 child divs — one for each face (front, back, right, left, top, bottom)
+- Use a 4-level HTML hierarchy: a position container (x/y movement), a perspective container (static isometric rotation), a cube container (rolling rotation), and 6 child divs — one for each face (front, back, right, left, top, bottom)
 - The cube container must establish a shared 3D space for all faces
 - Each face is positioned by first rotating it to its orientation, then translating it outward from the centre by half the cube's size
 - Each face needs a distinct shade/tint to convey depth — participants choose their own colour palette
@@ -22,6 +22,7 @@ Full task requirements, hints, and acceptance criteria for Phase 1 (CSS + GSAP) 
 - Side faces (front, back, left, right) rotate around Y. Top and bottom faces rotate around X
 - Consider pushing the entire cube back with a negative `translateZ` on the cube container — this centres the cube's visual position on its transform origin, which simplifies animation pivot math later
 - `color-mix()` in CSS is one approach for generating face shading from a single base colour
+- **3-container design:** Use three nested containers, each with one transform responsibility — a position container (x/y movement), a perspective container (static isometric rotation), and the cube itself (rolling rotation). This separation is essential: GSAP overwrites the full `transform` property when animating, so mixing position and rotation on one element breaks the animation.
 
 **Acceptance Criteria:** A static, correctly-formed 3D cube is visible in the browser with all 6 faces in the right positions and distinguishable shading.
 
