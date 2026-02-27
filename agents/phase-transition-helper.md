@@ -76,11 +76,11 @@ Emphasise that `attach()` (not `add()`) is critical — it preserves the cube's 
 **CSS approach:** The browser handles rendering automatically. GSAP updates CSS values and the browser repaints.
 
 **Three.js equivalent:** You must explicitly call `renderer.render(scene, camera)` every frame. Three options:
-1. `gsap.ticker.add(() => renderer.render(scene, camera))` — synchronises rendering with GSAP's update cycle and avoids redundant frames (recommended)
-2. `requestAnimationFrame` loop (simple and reliable)
-3. `onUpdate` callback per tween (renders only during active animation — scene freezes between rolls)
+1. `requestAnimationFrame` loop — calls `renderer.render(scene, camera)` every frame. Simple, always works. **(spec preferred — the boilerplate provides this)**
+2. `gsap.ticker.add(() => renderer.render(scene, camera))` — synchronises rendering with GSAP's update cycle, avoids redundant frames
+3. `onUpdate` callback per tween — renders only during active animation; scene freezes between rolls (least robust)
 
-**What to tell them:** This is a new concept with no CSS equivalent. Recommend option 1 (`gsap.ticker`) since it syncs rendering with GSAP's own update cycle. Option 2 is also fine. Without a render loop, GSAP will update values internally but nothing will appear on screen.
+**What to tell them:** This is a new concept with no CSS equivalent. The boilerplate already provides a RAF render loop — they should verify it is running rather than creating a duplicate. Without any render loop, GSAP will update values internally but nothing will appear on screen.
 
 ### Rotation Tracking
 
@@ -136,7 +136,7 @@ Suggest this implementation order for Phase 2:
 
 1. **Add the cube to the scene** (Task 2.1) — `BoxGeometry` + material, verify it appears
 2. **Understand the isometric camera** (Task 2.2) — review the boilerplate's `OrthographicCamera` setup. Understand how world X/Z axes map to diagonal screen directions. This informs all the direction data you'll port next
-3. **Set up the render loop** — get something rendering before trying animation
+3. **Verify the render loop** — the boilerplate provides a RAF loop already; confirm it is running. Do not create a duplicate loop. For React integration, see the `react-integration` skill.
 4. **Port the direction data** — adapt the 4-direction config from CSS to Three.js axes
 5. **Implement one roll** — get a single roll working in one direction with the pivot technique
 6. **Port the roll chaining** — connect `onComplete` to random direction selection

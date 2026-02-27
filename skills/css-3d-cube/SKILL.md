@@ -232,7 +232,7 @@ Apply to a **container** element wrapping the cube, not to individual faces:
 
 ```css
 .iso-container {
-  transform: rotateX(35.264deg) rotateZ(45deg);
+  transform: rotateX(-35.264deg) rotateY(45deg);
   transform-style: preserve-3d;
 }
 ```

@@ -140,11 +140,11 @@ Higher percentage = brighter (more base colour). In isometric view, top + two si
 
 ## Isometric Projection (Task 1.2)
 
-Apply to the `.scene` container, not individual faces:
+Apply to the `.perspective-container`, not individual faces:
 
 ```css
-.scene {
-  transform: rotateX(35.264deg) rotateZ(45deg);
+.perspective-container {
+  transform: rotateX(-35.264deg) rotateY(45deg);
   transform-style: preserve-3d;
   /* NO perspective property — isometric is orthographic */
 }

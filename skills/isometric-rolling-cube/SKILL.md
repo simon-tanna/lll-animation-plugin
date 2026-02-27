@@ -67,14 +67,14 @@ The pivot offset is always: half a cube-width toward the roll direction on the g
 
 ### Direction Data (CSS — pre-isometric flat plane)
 
-In the CSS approach, the isometric rotation (`rotateX(35.264deg) rotateZ(45deg)`) is applied to a **container** element. The cube rolls in the container's local coordinate system (flat plane before rotation), so:
+In the CSS approach, the isometric rotation (`rotateX(-35.264deg) rotateY(45deg)`) is applied to the **perspective container**. The cube rolls in the container's local coordinate system (flat plane before rotation), so:
 
 | Direction            | transform-origin  | Rotation        | Translation    |
 | -------------------- | ----------------- | --------------- | -------------- |
-| Right (+X)           | bottom-right edge | rotateZ(-90deg) | translateX(+S) |
-| Left (-X)            | bottom-left edge  | rotateZ(+90deg) | translateX(-S) |
-| Forward (-Y screen)  | bottom-front edge | rotateX(+90deg) | translateY(-S) |
-| Backward (+Y screen) | bottom-back edge  | rotateX(-90deg) | translateY(+S) |
+| Top-Right (+X)       | bottom-right edge | rotateZ(-90deg) | translateX(+S) |
+| Bottom-Left (-X)     | bottom-left edge  | rotateZ(+90deg) | translateX(-S) |
+| Bottom-Right (-Y)    | bottom-front edge | rotateX(+90deg) | translateY(-S) |
+| Top-Left (+Y)        | bottom-back edge  | rotateX(-90deg) | translateY(+S) |
 
 The `transform-origin` values need to target the specific bottom edge in 3D space. For a cube of side `S` centred at its own origin:
 

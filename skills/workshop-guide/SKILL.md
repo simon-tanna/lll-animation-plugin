@@ -15,9 +15,9 @@ argument-hint: "[task-id] e.g. 1.3, 2.1, or blank for overview"
 
 A 3-hour workshop building a rolling 3D isometric cube in two phases.
 
-**Tech stack:** Vite + TypeScript, HTML, CSS, vanilla JS/TS, GSAP, Three.js
+**Tech stack:** Vite + React TypeScript, GSAP, Three.js
 
-Participants receive a starter repo with a working Vite/TS app, an isometric diamond grid background, and all dependencies pre-installed.
+Participants receive a starter repo with a working Vite/React TypeScript app, an isometric diamond grid background, and all dependencies pre-installed (GSAP, Three.js).
 
 **End result:** A mint/teal 3D cube in isometric view that continuously rolls across the grid — tumbling face-to-face in random directions, bouncing off window boundaries.
 
@@ -239,7 +239,7 @@ When starting Phase 2, here's what carries over and what changes:
 | Concept | Phase 1 (CSS) | Phase 2 (Three.js) |
 |---------|--------------|-------------------|
 | Cube construction | HTML elements + CSS transforms | `BoxGeometry` + `Material` |
-| Isometric view | Container rotation (`rotateX(35.264deg) rotateZ(45deg)`) | `OrthographicCamera` positioned at isometric angle |
+| Isometric view | 3 containers: position (x/y only), perspective (`rotateX(-35.264deg) rotateY(45deg)`), cube (roll only). The two CSS containers collapse into one `THREE.Group` in Three.js. | `OrthographicCamera` + `THREE.Group` with static isometric rotation |
 | Pivot point | Basic rotation + reset in `onComplete` | Temporary `Object3D` at edge + `attach()` reparenting |
 | Roll animation | GSAP tweens CSS properties | GSAP tweens `mesh.rotation` / `mesh.position` sub-objects |
 | Render trigger | Browser handles CSS rendering | Need explicit render loop (rAF or `gsap.ticker`) |

@@ -4,23 +4,30 @@ Full step-by-step implementation based on David DeSandro's [Intro to CSS 3D Tran
 
 ## HTML Structure
 
+The workshop uses a 4-tier hierarchy — three containers each with one transform responsibility, plus the face divs:
+
 ```html
-<div class="scene">
-  <div class="cube">
-    <div class="cube__face cube__face--front">front</div>
-    <div class="cube__face cube__face--back">back</div>
-    <div class="cube__face cube__face--right">right</div>
-    <div class="cube__face cube__face--left">left</div>
-    <div class="cube__face cube__face--top">top</div>
-    <div class="cube__face cube__face--bottom">bottom</div>
+<div class="position-container">    <!-- translates x/y — GSAP target for movement -->
+  <div class="perspective-container">  <!-- static isometric rotation — never animated -->
+    <div class="cube">              <!-- rolling rotation — GSAP target for rolling -->
+      <div class="cube__face cube__face--front">front</div>
+      <div class="cube__face cube__face--back">back</div>
+      <div class="cube__face cube__face--right">right</div>
+      <div class="cube__face cube__face--left">left</div>
+      <div class="cube__face cube__face--top">top</div>
+      <div class="cube__face cube__face--bottom">bottom</div>
+    </div>
   </div>
 </div>
 ```
 
-Three-tier hierarchy:
-- `.scene` — establishes the 3D viewing context (perspective or isometric container)
-- `.cube` — the 3D object container, holds faces in shared 3D space
+Container responsibilities:
+- `.position-container` — GSAP animates x/y translation only; never rotated
+- `.perspective-container` — static isometric rotation `rotateX(-35.264deg) rotateY(45deg)`; never animated
+- `.cube` — GSAP animates rolling rotation only; never translated; establishes `preserve-3d` for faces
 - `.cube__face` (x6) — individual face elements positioned within the cube
+
+**Why 3 containers:** GSAP overwrites the entire CSS `transform` property when it animates. Mixing position and rotation on one element means GSAP's position tween destroys the isometric rotation. Each container owns exactly one transform responsibility to prevent this conflict.
 
 ## Step-by-Step CSS
 
@@ -182,19 +189,35 @@ Participants choose their own palette — these percentages are a starting point
 The Desandro tutorial uses `perspective: 600px` on `.scene` for a vanishing-point 3D look. The workshop requires **isometric projection** (no perspective distortion):
 
 ```css
-.scene {
-  width: 200px;
-  height: 200px;
-  /* perspective: 600px -- REMOVED for isometric */
-  transform: rotateX(35.264deg) rotateZ(45deg);
+/* Position container — GSAP animates x/y translation */
+.position-container {
+  position: absolute;
+}
+
+/* Perspective container — static isometric rotation, never animated */
+.perspective-container {
+  /* NO perspective property — isometric is orthographic */
+  transform: rotateX(-35.264deg) rotateY(45deg);
   transform-style: preserve-3d;
+}
+
+/* Cube — rolling rotation only, establishes 3D space for faces */
+.cube {
+  --size: 200px;
+  --half: calc(var(--size) / 2);
+  width: var(--size);
+  height: var(--size);
+  position: relative;
+  transform-style: preserve-3d;
+  transform: translateZ(calc(var(--half) * -1));
 }
 ```
 
 Changes from Desandro's original:
-1. **Remove `perspective`** — isometric is orthographic, parallel lines stay parallel
-2. **Add isometric rotation** — `rotateX(35.264deg) rotateZ(45deg)` to the scene container
-3. **Add `preserve-3d`** to `.scene` — so the cube's 3D structure passes through
+1. **3 containers instead of 2** — position container (x/y), perspective container (isometric rotation), cube (rolling rotation). GSAP cannot animate position and rotation on the same element without overwriting one.
+2. **Remove `perspective`** — isometric is orthographic, parallel lines stay parallel
+3. **Isometric rotation on `.perspective-container`** — `rotateX(-35.264deg) rotateY(45deg)` (negative X, Y axis)
+4. **`preserve-3d` on both `.perspective-container` and `.cube`** — so the 3D structure passes through each level
 
 The angle `35.264deg` = `atan(1 / sqrt(2))` produces true isometric foreshortening where all three visible faces appear equal.
 
